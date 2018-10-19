@@ -1,0 +1,39 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+exports.default = function () {
+  var state = arguments.length <= 0 || arguments[0] === undefined ? initialState : arguments[0];
+  var action = arguments[1];
+
+  switch (action.type) {
+    case _actionType.LOGIN_SUCCESS:
+      return (0, _objectAssign2.default)({}, state, { token: action.token });
+    case _actionType.LOGOUT_USER:
+      return (0, _objectAssign2.default)({}, state, { token: null });
+    case _actionType.SHOW_ERROR_MSG:
+      return (0, _objectAssign2.default)({}, state, { message: action.message });
+    case _actionType.GET_USERINFO_SUCCESS:
+      return (0, _objectAssign2.default)({}, state, { user: action.response });
+    default:
+      return state;
+  }
+};
+
+var _actionType = require('../constants/actionType');
+
+var _authUtil = require('../util/authUtil');
+
+var _objectAssign = require('object-assign');
+
+var _objectAssign2 = _interopRequireDefault(_objectAssign);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+var initialState = {
+  token: (0, _authUtil.getCookie)('token') || null,
+  user: null,
+  message: {}
+};

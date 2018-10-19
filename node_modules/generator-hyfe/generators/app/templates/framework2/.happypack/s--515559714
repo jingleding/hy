@@ -1,0 +1,110 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.uploadUserInfo = exports.loadNavs = exports.loadNewsDetail1 = exports.loadNewsDetail = exports.loadNewsList = undefined;
+
+var _actionType = require('../constants/actionType');
+
+var actionType = _interopRequireWildcard(_actionType);
+
+var _api = require('../api');
+
+var _api2 = _interopRequireDefault(_api);
+
+var _authUtil = require('../util/authUtil');
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
+
+/**
+ * 加载所有公司公告列表，先不分页，后面内容多了需要添加分页
+ * 
+ * @returns action
+ */
+var loadNewsList = exports.loadNewsList = function loadNewsList() {
+  return {
+    type: actionType.LOAD_NEW_LIST,
+    promise: _api2.default.getNewsList()
+  };
+};
+
+/**
+ * 加载公告详情
+ * 详细描述：
+ * action返回如下对象：
+ * {
+ *  type: actionType.NEWS_DETAIL,
+    promise: api.getNewsDetail(id)
+ * }
+ * 和以下写法的作用是类似的：
+ * return (dispatch, getState) => {
+    return api.getNewsDetail(id)
+      .then(response => ({
+        json: response.data,
+        status: response.statusText
+      }))
+      .then(({ json, status }) => {
+        let news = json
+        return dispatch({
+          type: actionType.NEWS_DETAIL_SUCCESS,
+          response: news
+        })
+      }).catch(error => {
+        return dispatch({
+          type: actionType.NEWS_DETAIL_FAILURE
+        })
+      })
+    }
+ * 
+ * @returns action
+ * @param {string} id 公告ID
+ */
+var loadNewsDetail = exports.loadNewsDetail = function loadNewsDetail(id) {
+  return {
+    type: actionType.NEWS_DETAIL,
+    promise: _api2.default.getNewsDetail(id)
+  };
+};
+
+var loadNewsDetail1 = exports.loadNewsDetail1 = function loadNewsDetail1(id) {
+  return function (dispatch, getState) {
+    return _api2.default.getNewsDetail(id).then(function (response) {
+      return {
+        json: response.data,
+        status: response.statusText
+      };
+    }).then(function (_ref) {
+      var json = _ref.json;
+      var status = _ref.status;
+
+      var news = json;
+      return dispatch({
+        type: actionType.NEWS_DETAIL_SUCCESS,
+        response: news
+      });
+    }).catch(function (error) {
+      return dispatch({
+        type: actionType.NEWS_DETAIL_FAILURE
+      });
+    });
+  };
+};
+
+var loadNavs = exports.loadNavs = function loadNavs() {
+  var token = arguments.length <= 0 || arguments[0] === undefined ? (0, _authUtil.getCookie)('token') : arguments[0];
+
+  return {
+    type: actionType.LOAD_NAVS,
+    promise: _api2.default.getNavs(token)
+  };
+};
+
+var uploadUserInfo = exports.uploadUserInfo = function uploadUserInfo(data) {
+  return {
+    type: actionType.UPLOAD_FILE,
+    promise: _api2.default.uploadUserInfo(data)
+  };
+};

@@ -1,0 +1,16 @@
+* {
+  padding: 0;
+  margin: 0;
+}
+
+body {
+  background: mediumspringgreen;
+}
+
+.list {
+  position: absolute;
+  left: 400px;
+  color: red;
+  list-style: none;
+  top: 30px;
+}

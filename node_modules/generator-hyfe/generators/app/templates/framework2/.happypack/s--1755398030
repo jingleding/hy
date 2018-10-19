@@ -1,0 +1,126 @@
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.getUserInfo = exports.showMsg = undefined;
+exports.localLogin = localLogin;
+exports.logout = logout;
+
+var _actionType = require('../constants/actionType');
+
+var actionType = _interopRequireWildcard(_actionType);
+
+var _api = require('../api');
+
+var _api2 = _interopRequireDefault(_api);
+
+var _reactRouterRedux = require('react-router-redux');
+
+var _authUtil = require('../util/authUtil');
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _interopRequireWildcard(obj) { if (obj && obj.__esModule) { return obj; } else { var newObj = {}; if (obj != null) { for (var key in obj) { if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key]; } } newObj.default = obj; return newObj; } }
+
+var showMsg = exports.showMsg = function showMsg(content) {
+  var type = arguments.length <= 1 || arguments[1] === undefined ? 'error' : arguments[1];
+
+  return {
+    type: actionType.SHOW_ERROR_MSG,
+    message: {
+      content: content,
+      type: type
+    }
+  };
+};
+
+/**
+ * 登录成功后要触发的action
+ * 
+ * @param {any} token 登录成功标识
+ * @returns action
+ */
+
+// import requestURL from '../constants/requestURL'
+function loginSuccess(token) {
+  return {
+    type: actionType.LOGIN_SUCCESS,
+    token: token
+  };
+}
+
+/**
+ * 登录时候触发的action
+ * 
+ * @export
+ * @param {any} userInfo 登录用户信息
+ * @returns
+ */
+function localLogin(userInfo) {
+  return function (dispatch, getState) {
+    return _api2.default.localLogin(userInfo).then(function (response) {
+      return {
+        json: response.data,
+        status: response.statusText
+      };
+    }).then(function (_ref) {
+      var json = _ref.json;
+      var status = _ref.status;
+
+      console.log('登录信息', json, status);
+      if (status !== 'OK') {
+        return dispatch(showMsg(json.msg || '登录失败'));
+      }
+
+      //密码或用户名错误
+      if (json.code !== 0) {
+        return dispatch(showMsg(json.msg || '登录失败'));
+      }
+
+      //获取token，并存储
+      (0, _authUtil.saveCookie)('token', json.token);
+
+      //获取用户信息
+      dispatch(getUserInfo(json.token));
+      dispatch(loginSuccess(json.token));
+      dispatch(showMsg('登录成功', 'success'));
+
+      //路由跳转
+      dispatch((0, _reactRouterRedux.push)('/index'));
+    }).catch(function (err) {
+      //登录失败
+      return dispatch(showMsg(err.data.error_msg || '登录失败'));
+    });
+  };
+}
+
+/**
+ * 根据cookie中的token信息获取用户信息
+ * 
+ * @export
+ * @param {any} token 用户登录信息
+ * @returns
+ */
+var getUserInfo = exports.getUserInfo = function getUserInfo() {
+  var token = arguments.length <= 0 || arguments[0] === undefined ? (0, _authUtil.getCookie)('token') : arguments[0];
+
+  return {
+    type: actionType.GET_USERINFO,
+    promise: _api2.default.getUserInfo(token)
+  };
+};
+
+/**
+ * 用户退出登录
+ * 
+ * @export
+ * @returns
+ */
+function logout() {
+  return function (dispatch) {
+    //用户退出登录后，清除cookie中的登录标识，返回到登录页面
+    (0, _authUtil.signOut)();
+    dispatch((0, _reactRouterRedux.push)('/login'));
+  };
+}
